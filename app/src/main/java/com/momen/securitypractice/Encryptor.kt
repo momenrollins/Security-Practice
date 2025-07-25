@@ -1,14 +1,27 @@
 package com.momen.securitypractice
 
+import java.security.KeyFactory
+import java.security.KeyPair
+import java.security.KeyPairGenerator
+import java.security.PrivateKey
+import java.security.PublicKey
 import java.security.SecureRandom
+import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 object Encryptor {
+
+    /**
+     * ---------- AES ----------
+     */
+
     private const val AES_ALG = "AES"
     private const val AES_TRANSFORMATION = "AES/CBC/PKCS5Padding"
+
 
     fun generateAESKey(): ByteArray {
         val keyGen: KeyGenerator = KeyGenerator.getInstance("AES")
@@ -38,4 +51,56 @@ object Encryptor {
         val decrypted: ByteArray = cipher.doFinal(encrypted)
         return decrypted
     }
+
+    /**
+     * ---------- RSA ----------
+     */
+
+    private lateinit var keyPair: KeyPair
+    private const val RSA_ALG = "RSA"
+    private const val RSA_TRANSFORMATION = "RSA/ECB/PKCS1Padding"
+
+    private fun generateRSAKeys() {
+        if (::keyPair.isInitialized) {
+            return
+        }
+        try {
+            val kpg: KeyPairGenerator = KeyPairGenerator.getInstance(RSA_ALG)
+            kpg.initialize(1024)
+            keyPair = kpg.generateKeyPair()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun getRSAPublicKey(): ByteArray {
+        generateRSAKeys()
+        return keyPair.public.encoded
+    }
+
+    fun getRSAPrivateKey(): ByteArray {
+        generateRSAKeys()
+        return keyPair.private.encoded
+    }
+
+    @Throws(Exception::class)
+    fun encryptRSA(publicKey: ByteArray, data: ByteArray): ByteArray {
+        val key: PublicKey =
+            KeyFactory.getInstance(RSA_ALG).generatePublic(X509EncodedKeySpec(publicKey))
+        val cipher: Cipher = Cipher.getInstance(RSA_TRANSFORMATION)
+        cipher.init(Cipher.ENCRYPT_MODE, key)
+        val encrypted: ByteArray = cipher.doFinal(data)
+        return encrypted
+    }
+
+    @Throws(Exception::class)
+    fun decryptRSA(privateKey: ByteArray, encrypted: ByteArray): ByteArray {
+        val key: PrivateKey =
+            KeyFactory.getInstance(RSA_ALG).generatePrivate(PKCS8EncodedKeySpec(privateKey))
+        val cipher: Cipher = Cipher.getInstance(RSA_TRANSFORMATION)
+        cipher.init(Cipher.DECRYPT_MODE, key)
+        val decrypted: ByteArray = cipher.doFinal(encrypted)
+        return decrypted
+    }
+
 }

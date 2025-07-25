@@ -27,7 +27,10 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val secretKey = Encryptor.generateAESKey()
+        /**
+         * AES
+         */
+        val secretAESKey = Encryptor.generateAESKey()
 
         var encryptedAESText = ""
         var currentIVHex = ""
@@ -37,7 +40,7 @@ class FirstFragment : Fragment() {
             if (textToEncrypt.isEmpty()) return@setOnClickListener
             try {
                 val (encryptedBytes, ivBytes) = Encryptor.encryptAES(
-                    secretKey,
+                    secretAESKey,
                     textToEncrypt.toByteArray()
                 )
                 currentIVHex = ivBytes.joinToString(separator = "") { String.format("%02x", it) }
@@ -56,12 +59,47 @@ class FirstFragment : Fragment() {
                     encryptedAESText.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
                 val ivBytes = currentIVHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
-                val decryptedBytes = Encryptor.decryptAES(secretKey, encryptedBytes, ivBytes)
+                val decryptedBytes = Encryptor.decryptAES(secretAESKey, encryptedBytes, ivBytes)
                 binding.tvAesResult.text = "Decrypted:\n${String(decryptedBytes)}"
             } catch (e: Exception) {
                 binding.tvAesResult.text = "Decryption failed: ${e.message}"
             }
         }
+
+        /**
+         * RSA
+         */
+
+        val publicKey = Encryptor.getRSAPublicKey()
+        val privateKey = Encryptor.getRSAPrivateKey()
+
+        var encryptedRSAText = ""
+
+        binding.btnRsaEncrypt.setOnClickListener {
+            val textToEncrypt = binding.etTextToEncrypt.text.toString()
+            if (textToEncrypt.isEmpty()) return@setOnClickListener
+            try {
+                val encryptedBytes = Encryptor.encryptRSA(publicKey, textToEncrypt.toByteArray())
+                encryptedRSAText =
+                    encryptedBytes.joinToString(separator = "") { String.format("%02x", it) }
+                binding.tvRsaResult.text = "Encrypted:\n$encryptedRSAText"
+                } catch (e: Exception) {
+                binding.tvRsaResult.text = "Encryption failed: ${e.message}"
+            }
+        }
+
+        binding.btnRsaDecrypt.setOnClickListener {
+            if (encryptedRSAText.isEmpty()) return@setOnClickListener
+            try {
+                val encryptedBytes =
+                    encryptedRSAText.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+                val decryptedBytes = Encryptor.decryptRSA(privateKey, encryptedBytes)
+                binding.tvRsaResult.text = "Decrypted:\n${String(decryptedBytes)}"
+            } catch (e: Exception) {
+                binding.tvRsaResult.text = "Decryption failed: ${e.message}"
+            }
+        }
+
     }
 
     override fun onDestroyView() {
