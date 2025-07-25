@@ -3,6 +3,7 @@ package com.momen.securitypractice
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
+import java.security.MessageDigest
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.SecureRandom
@@ -101,6 +102,15 @@ object Encryptor {
         cipher.init(Cipher.DECRYPT_MODE, key)
         val decrypted: ByteArray = cipher.doFinal(encrypted)
         return decrypted
+    }
+
+    /**
+     * ---------- SHA-256 ----------
+     */
+
+    fun sha256(data: ByteArray): ByteArray {
+        val digest = MessageDigest.getInstance("SHA-256")
+        return digest.digest(data)
     }
 
 }

@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.momen.securitypractice.databinding.FragmentFirstBinding
+import java.util.UUID
 
 class FirstFragment : Fragment() {
 
@@ -83,7 +84,7 @@ class FirstFragment : Fragment() {
                 encryptedRSAText =
                     encryptedBytes.joinToString(separator = "") { String.format("%02x", it) }
                 binding.tvRsaResult.text = "Encrypted:\n$encryptedRSAText"
-                } catch (e: Exception) {
+            } catch (e: Exception) {
                 binding.tvRsaResult.text = "Encryption failed: ${e.message}"
             }
         }
@@ -97,6 +98,25 @@ class FirstFragment : Fragment() {
                 binding.tvRsaResult.text = "Decrypted:\n${String(decryptedBytes)}"
             } catch (e: Exception) {
                 binding.tvRsaResult.text = "Decryption failed: ${e.message}"
+            }
+        }
+
+        /**
+         * SHA-256
+         */
+
+        val challenge = UUID.randomUUID().toString()
+        val issuerScript = "Momen"
+        binding.btnSha256.setOnClickListener {
+            val textToHash = binding.etTextToEncrypt.text.toString()
+            if (textToHash.isEmpty()) return@setOnClickListener
+            try {
+                val dataToHash = textToHash + challenge + issuerScript
+                val hashedBytes = Encryptor.sha256(dataToHash.toByteArray())
+                binding.tvSha256Result.text =
+                    hashedBytes.joinToString(separator = "") { String.format("%02x", it) }
+            } catch (e: Exception) {
+                binding.tvSha256Result.text = "Hashing failed: ${e.message}"
             }
         }
 
