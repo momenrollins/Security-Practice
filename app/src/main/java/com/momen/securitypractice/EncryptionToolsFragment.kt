@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.fragment.findNavController
 import com.momen.securitypractice.databinding.FragmentEncryptionToolsBinding
 import java.util.UUID
 
@@ -118,6 +119,10 @@ class EncryptionToolsFragment : Fragment() {
             } catch (e: Exception) {
                 binding.tvSha256Result.text = "Hashing failed: ${e.message}"
             }
+        }
+
+        binding.btnSimulate.setOnClickListener {
+            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
         }
 
     }

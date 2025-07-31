@@ -45,6 +45,15 @@ object Encryptor {
     }
 
     @Throws(Exception::class)
+    fun encryptAES(key: ByteArray, data: ByteArray, iv: ByteArray): ByteArray {
+        val sKeySpec: SecretKeySpec = SecretKeySpec(key, AES_ALG)
+        val cipher: Cipher = Cipher.getInstance(AES_TRANSFORMATION)
+        cipher.init(Cipher.ENCRYPT_MODE, sKeySpec, IvParameterSpec(iv))
+        val encrypted: ByteArray = cipher.doFinal(data)
+        return encrypted
+    }
+
+    @Throws(Exception::class)
     fun decryptAES(raw: ByteArray, encrypted: ByteArray, iv: ByteArray): ByteArray {
         val sKeySpec: SecretKeySpec = SecretKeySpec(raw, AES_ALG)
         val cipher: Cipher = Cipher.getInstance(AES_TRANSFORMATION)
